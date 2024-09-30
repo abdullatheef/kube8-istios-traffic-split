@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        button {
+            padding: 5px 10px;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .logout-button {
+            float: right;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: calc(100% - 100px);
+            margin-right: 10px;
+        }
+
+        .add-todo-button {
+            padding: 8px 12px;
+            color: white;
+            background-color: #28a745;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .add-todo-button:hover {
+            background-color: #218838;
+        }
+    </style>
+    <script>
+        const apiUrl = 'http://127.0.0.1:8000/api';
+
+        // Check if the user is logged in
+        function checkLogin() {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                //alert('You are not logged in. Redirecting to login page...');
+                window.location.href = 'login.html'; // Redirect to login page
+            } else {
+                loadTodos(); // Load todos if logged in
+            }
+        }
+
+        async function loadTodos() {
+            const token = localStorage.getItem('access_token');
+            const response = await fetch(`${apiUrl}/todos/`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const data = await response.json();
+            renderTodos(data.results);
+        }
+
+        function renderTodos(todos) {
+            const todoList = document.getElementById('todo-list');
+            todoList.innerHTML = '';
+            todos.forEach(todo => {
+                const row = document.createElement('tr');
+                const itemCell = document.createElement('td');
+                itemCell.textContent = todo.item;
+
+                const deleteCell = document.createElement('td');
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = () => deleteTodo(todo.id);
+                deleteCell.appendChild(deleteButton);
+
+                row.appendChild(itemCell);
+                row.appendChild(deleteCell);
+                todoList.appendChild(row);
+            });
+        }
+
+        async function addTodo() {
+            const item = document.getElementById('todo-input').value;
+            const token = localStorage.getItem('access_token');
+
+            const response = await fetch(`${apiUrl}/todos/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ item })
+            });
+
+            if (response.ok) {
+                document.getElementById('todo-input').value = '';
+                loadTodos(); // Reload the todos
+            } else {
+                const error = await response.json();
+                alert("Data missing");
+            }
+        }
+
+        async function deleteTodo(id) {
+            const token = localStorage.getItem('access_token');
+
+            const response = await fetch(`${apiUrl}/todos/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                loadTodos(); // Reload the todos
+            } else {
+                const error = await response.json();
+                alert(error.error);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('access_token');
+            window.location.href = 'login.html'; // Redirect to login page
+        }
+
+        // Call checkLogin on page load
+        window.onload = checkLogin;
+    </script>
+</head>
+<body>
+    <h1>Todo App</h1>
+
+    <button class="logout-button" onclick="logout()">Logout</button>
+
+    <h2>Your Todos</h2>
+    <input type="text" id="todo-input" placeholder="Add a new todo" required />
+    <button class="add-todo-button" onclick="addTodo()">Add Todo</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Todo Item</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="todo-list"></tbody>
+    </table>
+</body>
+</html>

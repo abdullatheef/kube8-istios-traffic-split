@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <script>
+        const apiUrl = 'http://127.0.0.1:8000/api';
+
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            const response = await fetch(`${apiUrl}/login/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                localStorage.setItem('access_token', data.access); // Store token
+                window.location.href = '/'; // Redirect to todo page
+            } else {
+                const error = await response.json();
+                alert(error.error || 'Login failed');
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Login</h1>
+    <input type="text" id="username" placeholder="Username" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button onclick="login()">Login</button>
+    <p>
+        Don't have an account? <a href="signup.html">Sign Up</a>
+    </p>
+</body>
+</html>

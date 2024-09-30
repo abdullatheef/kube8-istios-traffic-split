@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: django
+  namespace: todo-app
+spec:
+  hosts:
+    - django
+  http:
+  - route:
+    - destination:
+        host: django
+        subset: v2
+      weight: 50
+    - destination:
+        host: django
+        subset: v1
+      weight: 50

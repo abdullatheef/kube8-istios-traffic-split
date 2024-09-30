@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: django
+  namespace: todo-app
+spec:
+  host: django
+  # trafficPolicy:
+  #   loadBalancer:
+  #     simple: RANDOM
+  subsets:
+  - name: v1
+    labels:
+      app: django
+      version: v1
+  - name: v2
+    labels:
+      app: django
+      version: v2

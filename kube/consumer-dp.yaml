@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery
+  namespace: todo-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celery
+  template:
+    metadata:
+      labels:
+        app: celery
+    spec:
+      containers:
+      - name: celery
+        image: my-celery-image:latest  # Build your image and push to a registry
+        imagePullPolicy: Never
+        command: ["celery", "-A", "to_do_backend", "worker", "--loglevel=info"]
+        env:
+        - name: DB_NAME
+          value: "mydb"
+        - name: DB_USER
+          value: "abc"
+        - name: DB_PASSWORD
+          value: "123"
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+        - name: RABBITMQ_HOST
+          value: "rabbitmq"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: celery
+  namespace: todo-app
+spec:
+  ports:
+  - port: 5555  # Change as needed
+  selector:
+    app: celery

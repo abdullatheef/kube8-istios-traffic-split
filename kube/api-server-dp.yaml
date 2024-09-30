@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-v1
+  namespace: todo-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: django
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: django
+        version: v1
+    spec:
+      containers:
+      - name: django
+        image: my-django-image:latest  # Build your image and push to a registry
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DB_NAME
+          value: "mydb"
+        - name: DB_USER
+          value: "abc"
+        - name: DB_PASSWORD
+          value: "123"
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+        - name: RABBITMQ_HOST
+          value: "rabbitmq"
+        - name: APP_VERSION_CUSTOM
+          value: "v1"
